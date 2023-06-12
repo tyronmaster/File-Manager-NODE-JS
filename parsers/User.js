@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-class UserName {
+class User {
   constructor() {
     const userNameArgument = process.argv
       .slice(2, 3) // prevent other argument parsing as username
@@ -19,4 +19,4 @@ class UserName {
   }
 }
 
-export { UserName };
+export { User };

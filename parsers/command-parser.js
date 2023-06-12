@@ -2,13 +2,19 @@
 /* eslint-disable no-console */
 /* eslint-disable import/no-cycle */
 /* eslint-disable import/extensions */
-import path from 'path';
-import { readDir } from '../commands/readdir.js';
-import { username } from '../index.js';
+// import path from 'path';
+// import os from 'os';
+// import { readDir } from '../commands/readdir.js';
+import { currentUser } from '../index.js';
+// import { up, ls } from '../commands/up.js';
+import { Operation } from './Operations.js';
 
-let currentPath = path.dirname(process.execPath);
+// let currentPath = path.dirname(process.execPath);
+// let currentPath = path.dirname(os.homedir());
 
-function commandParser(userCommand) {
+const operator = new Operation();
+
+async function commandParser(userCommand) {
   const commandArgs = userCommand
     .toString()
     .trim()
@@ -17,23 +23,35 @@ function commandParser(userCommand) {
 
   switch (command) {
     case '.exit': {
-      username.farewell();
+      currentUser.farewell();
+      break;
+    }
+    case 'up': {
+      // currentPath = up(currentPath);
+      // await readDir(currentPath);
+      await operator.up();
       break;
     }
     case 'ls': {
-      console.log(currentPath);
-      readDir(currentPath);
+      // console.log(currentPath);
+      // await readDir(currentPath);
+      await operator.ls();
       break;
     }
+
     case 'cd': {
-      // fix bug when entered argument is "d:" without "\"
       let pathFromArgs = args.join(' ');
+
+      // fix bug when entered argument is "d:" without "\"
       if (pathFromArgs.trim().match(/^[a-z]:/gi) && pathFromArgs.length === 2) {
         pathFromArgs += '\\';
       }
 
-      currentPath = path.resolve(currentPath, pathFromArgs);
-      readDir(currentPath);
+      // currentPath = path.resolve(currentPath, pathFromArgs);
+      // console.log(currentPath);
+      // await readDir(currentPath);
+      console.log('Path from arguments ', pathFromArgs);
+      await operator.cd(pathFromArgs);
       break;
     }
     default: process.stdout.write('Invalid input \n');
