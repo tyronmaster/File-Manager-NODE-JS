@@ -1,14 +1,22 @@
-function parseUserName() {
+/* eslint-disable import/prefer-default-export */
+class UserName {
+  constructor() {
     const userNameArgument = process.argv
-        .slice(2, 3) // prevent other argument parsing as username
-        .toString()
-        .trim()
-        .split('--username=')[1]; // prevent situation when name includes '='
-    return userNameArgument;
+      .slice(2, 3) // prevent other argument parsing as username
+      .toString()
+      .trim()
+      .split('--username=')[1]; // prevent situation when name includes '='
+    this.username = userNameArgument.length ? userNameArgument : 'Guy Fox';
+  }
+
+  greeting() {
+    process.stdout.write(`Welcome to the File Manager, ${this.username}!\n`);
+  }
+
+  farewell() {
+    process.stdout.write(`Thank you for using File Manager, ${this.username}, goodbye!\n`);
+    process.exit();
+  }
 }
 
-function greeting(name) {
-    const USERNAME = name.length ? name : 'Guy Fox';
-    process.stdout.write(`Welcome to the File Manager, ${USERNAME}!\n`);
-}
-export { parseUserName, greeting };
+export { UserName };
