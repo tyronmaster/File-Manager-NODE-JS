@@ -7,12 +7,12 @@
 // import { readDir } from '../commands/readdir.js';
 import { currentUser } from '../index.js';
 // import { up, ls } from '../commands/up.js';
-import { Operation } from './Operations.js';
+import { Core } from './Core.js';
 
 // let currentPath = path.dirname(process.execPath);
 // let currentPath = path.dirname(os.homedir());
 
-const operator = new Operation();
+const operator = new Core();
 
 async function commandParser(userCommand) {
   const commandArgs = userCommand
