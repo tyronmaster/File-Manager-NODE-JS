@@ -1,32 +1,41 @@
-/* eslint-disable class-methods-use-this */
-/* eslint-disable import/no-unresolved */
-/* eslint-disable import/extensions */
-/* eslint-disable no-constant-condition */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable no-console */
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable import/prefer-default-export */
 import os from 'os';
 import path from 'path';
 import fs from 'fs/promises';
 import readline from 'readline/promises';
 import { comandValidate, commandParser } from '../commands/helpers.js';
+import { currentUser } from '../index.js';
 
 class Core {
   constructor() {
     this.currentPath = path.dirname(os.homedir());
+    process.chdir(this.currentPath);
   }
 
-  async _resolvePath(userPath) {
-    const tempPath = path.resolve(this.currentPath, userPath);
-    const verify = await fs.lstat(tempPath);
-    if (verify.isDirectory()) this.currentPath = tempPath;
-    return this.currentPath;
+  _resolvePath(userPath) {
+    this.currentPath = path.resolve(this.currentPath, userPath); // it works alone
+    // const tempPath = path.resolve(this.currentPath, userPath);
+    // const verify = await fs.stat(tempPath);
+    // if (verify.isDirectory()) {
+    //   this.currentPath = tempPath;
+    //   return this.currentPath
+    // };
+    // if (verify.isFile()) return tempPath;
+    // process.chdir(this.currentPath);
+    // return this.currentPath;
   }
 
-  exit() {
-    process.exit();
+  async _pathToFileCheck(userPath) {
+    // const tempPath = path.resolve(this.currentPath, userPath);
+    const verify = await fs.lstat(userPath);
+    if (verify.isFile()) return true;
+    return false;
+  }
+
+  async _pathToDirCheck(userPath) {
+    // const tempPath = path.resolve(this.currentPath, userPath);
+    const verify = await fs.lstat(userPath);
+    if (verify.isDirectory()) return true;
+    return false;
   }
 
   async up() {
@@ -34,8 +43,8 @@ class Core {
   }
 
   async cd(userPath) {
-    await this._resolvePath(userPath);
-    console.log('Path from CD or UP', this.currentPath);
+    if (userPath.match(/^[a-z]:$/gi)) userPath += '\\';
+    this._resolvePath(userPath);
     await this.ls();
   }
 
@@ -57,8 +66,17 @@ class Core {
       }
       return current;
     });
-    console.log(`Current directory ${this.currentPath}`);
+    // console.log(`Current directory ${this.currentPath}`);
     console.table(list, ['Name', 'Type']);
+  }
+
+  async cat(param1) {
+    let pathToFile = path.resolve(this.currentPath, param1);
+    if(this._pathToFileCheck(pathToFile)){
+      console.log('Reading file ', pathToFile);
+      const line = await fs.readFile(pathToFile, 'utf-8');
+      console.log(line);
+    }
   }
 
   async run() {
@@ -67,11 +85,13 @@ class Core {
       output: process.stdout,
       terminal: true,
     });
+    // rl.on('SIGINT', () => currentUser.farewell());
+    // rl.on('exit', () => currentUser.farewell());
+    // rl.on('close', () => currentUser.farewell());
     do {
       const input = await rl.question(`Current directory ${this.currentPath}\n`);
       const [comand, path1, path2] = await commandParser(input);
-      // console.log(await commandParser(input));
-      // console.log(await comandValidate(comand, path1, path2) === true);
+      // console.log('Comand', comand);
       if (await comandValidate(comand, path1, path2)) {
         try {
           await this[comand](path1, path2);
@@ -80,6 +100,7 @@ class Core {
         }
       } else console.log('Invalid input');
     } while (true);
+
   }
 }
 

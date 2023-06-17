@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "start:user": "npm run start -- --username=Santa   --userpass=testonemore"
   },
   "repository": {
     "type": "git",
@@ -22,10 +23,5 @@
   "bugs": {
     "url": "https://github.com/tyronmaster/File-Manager-NODE-JS/issues"
   },
-  "homepage": "https://github.com/tyronmaster/File-Manager-NODE-JS#readme",
-  "devDependencies": {
-    "eslint": "^8.42.0",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.27.5"
-  }
+  "homepage": "https://github.com/tyronmaster/File-Manager-NODE-JS#readme"
 }

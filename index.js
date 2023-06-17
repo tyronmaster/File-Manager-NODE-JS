@@ -1,7 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable import/prefer-default-export */
-/* eslint-disable import/no-cycle */
-/* eslint-disable import/extensions */
 import { User } from './parsers/User.js';
 import { Core } from './parsers/Core.js';
 
@@ -12,6 +8,6 @@ const app = new Core();
 await app.run();
 
 process.on('SIGINT', () => currentUser.farewell());
-process.on('exit', () => currentUser.farewell());
+process.on('exit', () => process.nextTick(currentUser.farewell()));
 
 export { currentUser };
