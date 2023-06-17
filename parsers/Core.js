@@ -11,14 +11,14 @@ class Core {
     process.chdir(this.currentPath);
   }
 
-  _resolvePath(userPath) {
-    this.currentPath = path.resolve(this.currentPath, userPath); // it works alone
-    // const tempPath = path.resolve(this.currentPath, userPath);
-    // const verify = await fs.stat(tempPath);
-    // if (verify.isDirectory()) {
-    //   this.currentPath = tempPath;
-    //   return this.currentPath
-    // };
+  async _resolvePath(userPath) {
+    // this.currentPath = path.resolve(this.currentPath, userPath); // it works alone
+    const tempPath = path.resolve(this.currentPath, userPath);
+    const verify = await fs.lstat(tempPath);
+    if (verify.isDirectory()) {
+      this.currentPath = tempPath;
+      return this.currentPath
+    };
     // if (verify.isFile()) return tempPath;
     // process.chdir(this.currentPath);
     // return this.currentPath;
@@ -26,16 +26,22 @@ class Core {
 
   async _pathToFileCheck(userPath) {
     // const tempPath = path.resolve(this.currentPath, userPath);
-    const verify = await fs.lstat(userPath);
-    if (verify.isFile()) return true;
-    return false;
+    try {
+      const verify = await fs.lstat(userPath);
+      return verify.isFile();
+    } catch (e) {
+      return false;
+    }
   }
 
   async _pathToDirCheck(userPath) {
     // const tempPath = path.resolve(this.currentPath, userPath);
-    const verify = await fs.lstat(userPath);
-    if (verify.isDirectory()) return true;
-    return false;
+    try {
+      const verify = await fs.lstat(userPath);
+      return verify.isDirectory();
+    } catch (e) {
+      return false;
+    }
   }
 
   async up() {
@@ -44,7 +50,7 @@ class Core {
 
   async cd(userPath) {
     if (userPath.match(/^[a-z]:$/gi)) userPath += '\\';
-    this._resolvePath(userPath);
+    await this._resolvePath(userPath);
     await this.ls();
   }
 
@@ -72,10 +78,20 @@ class Core {
 
   async cat(param1) {
     let pathToFile = path.resolve(this.currentPath, param1);
-    if(this._pathToFileCheck(pathToFile)){
+    if (await this._pathToFileCheck(pathToFile)) {
       console.log('Reading file ', pathToFile);
       const line = await fs.readFile(pathToFile, 'utf-8');
       console.log(line);
+    }
+  }
+
+  async add(param1) {
+    let pathToFile = path.resolve(this.currentPath, param1);
+    if (await this._pathToFileCheck(pathToFile)) {
+      console.log(`File ${pathToFile} already exists`);
+    } else {
+      await fs.writeFile(pathToFile, '', 'utf-8');
+      console.log(`File ${pathToFile} successfully created`);
     }
   }
 
