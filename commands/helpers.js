@@ -1,11 +1,3 @@
-function fixPath(pathFromArgs) {
-  let pathToFix = pathFromArgs;
-  // fix bug when entered argument is "d:" without "\"
-  if (pathToFix.trim().match(/^[a-z]:/gi) && pathToFix.length === 2) {
-    pathToFix += '\\';
-  }
-  return pathToFix;
-}
 
 function commandParser(userCommand) {
   let [command, ...args] = userCommand
@@ -14,25 +6,25 @@ function commandParser(userCommand) {
     .split(' ');
   const quotes = ["\'", "\""];
   args = args.join(' ');
-  quotes.forEach(( quote, index) => {
+  quotes.forEach((quote, index) => {
     if (args.includes(quote)) {
       args = args
         .split(quote)
         .map(el => el.trim())
         .filter(el => (el.length > 0 && el !== ' '));
-    } else if(index === 1){
+    } else if (index === 1) {
       args = args.split(' ');
     }
   })
-  return args.length > 2 ? console.error('Wrong parameters. Try to use quotes') : [command,...args];
+  return args.length > 2 ? console.error('Wrong parameters. Try to use quotes') : [command, ...args];
 }
 
 async function comandValidate(comand, param1, param2) {
   switch (comand) {
     case '.exit': {
       // currentUser.farewell();
-      process.exit();
-      // return false;
+      // process.exit();
+      return true;
     }
     case 'up': {
       return (!param1 && !param2);
@@ -69,14 +61,15 @@ async function comandValidate(comand, param1, param2) {
       return (param1 && !param2);
     }
     case 'compress': {
-      return (param1 && param2);
+      const param2Condition = param2.slice(param2.lastIndexOf('\\') + 1).includes('.');
+      return (param1 && param2 && param2Condition);
     }
     case 'decompress': {
-      return (param1 && param2);
+      const param2Condition = param2.slice(param2.lastIndexOf('\\') + 1).includes('.');
+      return (param1 && param2 && param2Condition);
     }
     default: return false;
   }
-  // return false;
 }
 
 export { commandParser, comandValidate };

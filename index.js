@@ -8,6 +8,6 @@ const app = new Core();
 await app.run();
 
 process.on('SIGINT', () => currentUser.farewell());
-process.on('exit', () => process.nextTick(currentUser.farewell()));
+process.on('exit', () => currentUser.farewell());
 
 export { currentUser };
