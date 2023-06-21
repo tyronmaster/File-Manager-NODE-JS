@@ -22,8 +22,6 @@ function commandParser(userCommand) {
 async function comandValidate(comand, param1, param2) {
   switch (comand) {
     case '.exit': {
-      // currentUser.farewell();
-      // process.exit();
       return true;
     }
     case 'up': {

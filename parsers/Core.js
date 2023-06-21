@@ -72,7 +72,6 @@ class Core {
       }
       return current;
     });
-    // console.log(`Current directory ${this.currentPath}`);
     console.table(list, ['Name', 'Type']);
   }
 
@@ -137,7 +136,6 @@ class Core {
     const tempPath = await this._resolvePath(pathToFile);
     if (tempPath.type === 'file') {
       await fsPromises.unlink(tempPath.path);
-      // console.log(`File ${pathToFile} successfully removed`);
     }
   }
 
@@ -213,12 +211,9 @@ class Core {
       output: process.stdout,
       terminal: true,
     });
-    // rl.input.on('SIGINT', () => currentUser.farewell());
-    // rl.input.on('exit', () => currentUser.farewell());
-    // rl.input.on('close', () => currentUser.farewell());
     do {
       const input = await rl.question(`Current directory ${this.currentPath}\n`);
-      const [comand, path1, path2] = await commandParser(input);
+      const [comand, path1, path2] = commandParser(input);
       if (await comandValidate(comand, path1, path2)) {
         try {
           await this[comand](path1, path2);
