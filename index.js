@@ -7,9 +7,7 @@ currentUser.greeting();
 process.on('SIGINT', () => currentUser.farewell());
 process.on('exit', () => currentUser.farewell());
 
-const app = new Core(currentUser);
+const app = new Core();
 await app.run();
-
-
 
 export { currentUser };

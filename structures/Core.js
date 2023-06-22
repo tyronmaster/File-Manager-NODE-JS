@@ -5,12 +5,10 @@ import zlib from 'zlib';
 import fs from 'fs';
 import fsPromises from 'fs/promises';
 import readline from 'readline/promises';
-import { comandValidate, commandParser } from '../commands/helpers.js';
-import { currentUser } from '../index.js';
+import { comandValidate, commandParser } from '../utils/utils.js';
 
 class Core {
-  constructor(user) {
-    this.user = user;
+  constructor() {
     this.currentPath = path.dirname(os.homedir());
     // process.chdir(this.currentPath);
   }
