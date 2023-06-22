@@ -1,4 +1,3 @@
-
 function commandParser(userCommand) {
   let [command, ...args] = userCommand
     .toString()

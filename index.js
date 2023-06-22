@@ -1,5 +1,5 @@
-import { User } from './parsers/User.js';
-import { Core } from './parsers/Core.js';
+import { User } from './structures/User.js';
+import { Core } from './structures/Core.js';
 
 const currentUser = new User();
 currentUser.greeting();

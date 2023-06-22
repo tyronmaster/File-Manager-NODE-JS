@@ -10,7 +10,6 @@ import { comandValidate, commandParser } from '../utils/utils.js';
 class Core {
   constructor() {
     this.currentPath = path.dirname(os.homedir());
-    // process.chdir(this.currentPath);
   }
 
   async _resolvePath(userPath) {
@@ -18,11 +17,14 @@ class Core {
     if (userPath.match(/^[a-z]:$/gi)) userPath += '\\';
 
     const tempPath = path.resolve(this.currentPath, userPath);
-    let type = '';
-    if (await this._pathToDirCheck(tempPath)) type = 'dir';
-    if (await this._pathToFileCheck(tempPath)) type = 'file';
-    if (type === '') throw new Error();
-    return { path: tempPath, type };
+    let isDirectory = false;
+    let isFile = false;
+
+    if (await this._pathToDirCheck(tempPath)) { isDirectory = true };
+    if (await this._pathToFileCheck(tempPath)) { isFile = true };
+    if (!isDirectory && !isFile) throw new Error();
+
+    return { path: tempPath, isDirectory, isFile };
   }
 
   async _pathToFileCheck(userPath) {
@@ -49,7 +51,7 @@ class Core {
 
   async cd(userPath) {
     const tempPath = await this._resolvePath(userPath);
-    if (tempPath.type === 'dir') this.currentPath = tempPath.path;
+    if (tempPath.isDirectory) this.currentPath = tempPath.path;
     await this.ls();
   }
 
@@ -76,15 +78,16 @@ class Core {
 
   async cat(userPath) {
     let tempPath = await this._resolvePath(userPath);
-    if (tempPath.type === 'file') {
-      console.log(`Reading file ${tempPath.path}`);
-      const line = await fsPromises.readFile(tempPath.path, 'utf-8');
-      console.log(line);
-    }
+    if (!tempPath.isFile) return false;
+
+    console.log(`Reading file ${tempPath.path}`);
+    const line = await fsPromises.readFile(tempPath.path, 'utf-8');
+    console.log(line);
   }
 
   async add(fileName) {
-    let pathToFile = path.resolve(this.currentPath, fileName);
+    const pathToFile = path.resolve(this.currentPath, fileName);
+
     if (await this._pathToFileCheck(pathToFile)) {
       console.log(`File ${pathToFile} already exists`);
     } else {
@@ -95,47 +98,46 @@ class Core {
 
   async rn(pathToFile, newFileName) {
     const pathToSrc = await this._resolvePath(pathToFile);
-    if (pathToSrc.type === 'file') {
-      const pathToDst = path.resolve(this.currentPath, newFileName);
-      if (await this._pathToFileCheck(pathToDst)) {
-        console.log(`File ${newFileName} already exists! Enter another file name`);
-      } else {
-        await fsPromises.rename(pathToSrc.path, pathToDst);
-        console.log(`File ${pathToFile} successfully renamed to ${newFileName}`);
-      }
+    if (!pathToSrc.isFile) return false;
+
+    const pathToDst = path.resolve(this.currentPath, newFileName);
+    if (await this._pathToFileCheck(pathToDst)) {
+      console.log(`File ${newFileName} already exists! Enter another file name`);
+    } else {
+      await fsPromises.rename(pathToSrc.path, pathToDst);
+      console.log(`File ${pathToFile} successfully renamed to ${newFileName}`);
     }
   }
 
   async cp(srcFilePath, dstDirPath) {
-    let pathToSrc = await this._resolvePath(srcFilePath);
-    let pathToDst = await this._resolvePath(dstDirPath);
-    if (pathToSrc.type === 'file' && pathToDst.type === 'dir') {
-      const fileName = pathToSrc.path.slice(pathToSrc.path.lastIndexOf('\\') + 1);
-      const read = fs.createReadStream(pathToSrc.path);
-      const write = fs.createWriteStream(path.resolve(pathToDst.path, fileName));
-      read.pipe(write);
-      console.log(`File ${srcFilePath} successfully copied to ${dstDirPath}`);
-    }
+    const pathToSrc = await this._resolvePath(srcFilePath);
+    const pathToDst = await this._resolvePath(dstDirPath);
+    if (!pathToSrc.isFile && !pathToDst.isDirectory) return false;
+
+    const fileName = pathToSrc.path.slice(pathToSrc.path.lastIndexOf('\\') + 1);
+    const read = fs.createReadStream(pathToSrc.path);
+    const write = fs.createWriteStream(path.resolve(pathToDst.path, fileName));
+    read.pipe(write);
+    console.log(`File ${srcFilePath} successfully copied to ${dstDirPath}`);
   }
 
   async mv(srcFilePath, dstDirPath) {
-    let pathToSrc = await this._resolvePath(srcFilePath);
-    let pathToDst = await this._resolvePath(dstDirPath);
-    if (pathToSrc.type === 'file' && pathToDst.type === 'dir') {
-      const fileName = pathToSrc.path.slice(pathToSrc.path.lastIndexOf('\\') + 1);
-      const read = fs.createReadStream(pathToSrc.path);
-      const write = fs.createWriteStream(path.resolve(pathToDst.path, fileName));
-      read.pipe(write);
-      await this.rm(pathToSrc.path);
-      console.log(`File ${srcFilePath} successfully moved to ${dstDirPath}`);
-    }
+    const pathToSrc = await this._resolvePath(srcFilePath);
+    const pathToDst = await this._resolvePath(dstDirPath);
+    if (!pathToSrc.isFile && !pathToDst.isDirectory) return false;
+
+    const fileName = pathToSrc.path.slice(pathToSrc.path.lastIndexOf('\\') + 1);
+    const read = fs.createReadStream(pathToSrc.path);
+    const write = fs.createWriteStream(path.resolve(pathToDst.path, fileName));
+    read.pipe(write);
+    await this.rm(pathToSrc.path);
+    console.log(`File ${srcFilePath} successfully moved to ${dstDirPath}`);
   }
 
   async rm(pathToFile) {
     const tempPath = await this._resolvePath(pathToFile);
-    if (tempPath.type === 'file') {
-      await fsPromises.unlink(tempPath.path);
-    }
+    if (!tempPath.isFile) return false;
+    await fsPromises.unlink(tempPath.path);
   }
 
   os(attr) {
@@ -168,36 +170,36 @@ class Core {
 
   async hash(pathToFile) {
     const tempPath = await this._resolvePath(pathToFile);
-    if (tempPath.type === 'file') {
-      const hash = crypto.createHash('sha256');
-      const readFile = await fsPromises.readFile(tempPath.path);
-      let code = hash.update(readFile);
-      console.log(`hash: ${code.digest('hex')}`);
-    }
+    if (!tempPath.isFile) return false;
+
+    const hash = crypto.createHash('sha256');
+    const readFile = await fsPromises.readFile(tempPath.path);
+    let code = hash.update(readFile);
+    console.log(`hash: ${code.digest('hex')}`);
   }
 
   async compress(pathToSrcFile, pathToDstFile) {
     const srcFile = await this._resolvePath(pathToSrcFile);
     const dstFile = path.resolve(this.currentPath, pathToDstFile);
-    if (srcFile.type === 'file') {
-      const readStream = fs.createReadStream(srcFile.path);
-      const writeStream = fs.createWriteStream(dstFile);
-      const compressor = zlib.createBrotliCompress();
-      readStream.pipe(compressor).pipe(writeStream);
-      console.log(`File ${pathToSrcFile} successfully compressed in ${pathToDstFile}`);
-    }
+    if (!srcFile.isFile) return false;
+
+    const readStream = fs.createReadStream(srcFile.path);
+    const writeStream = fs.createWriteStream(dstFile);
+    const compressor = zlib.createBrotliCompress();
+    readStream.pipe(compressor).pipe(writeStream);
+    console.log(`File ${pathToSrcFile} successfully compressed in ${pathToDstFile}`);
   }
 
   async decompress(pathToSrcFile, pathToDstFile) {
     const srcFile = await this._resolvePath(pathToSrcFile);
     const dstFile = path.resolve(this.currentPath, pathToDstFile);
-    if (srcFile.type === 'file') {
-      const readStream = fs.createReadStream(srcFile.path);
-      const writeStream = fs.createWriteStream(dstFile);
-      const decompressor = zlib.createBrotliDecompress();
-      readStream.pipe(decompressor).pipe(writeStream);
-      console.log(`File ${pathToSrcFile} successfully decompressed in ${pathToDstFile}`);
-    }
+    if (!srcFile.isFile) return false;
+
+    const readStream = fs.createReadStream(srcFile.path);
+    const writeStream = fs.createWriteStream(dstFile);
+    const decompressor = zlib.createBrotliDecompress();
+    readStream.pipe(decompressor).pipe(writeStream);
+    console.log(`File ${pathToSrcFile} successfully decompressed in ${pathToDstFile}`);
   }
 
   async run() {
@@ -206,6 +208,7 @@ class Core {
       output: process.stdout,
       terminal: true,
     });
+    
     do {
       const input = await rl.question(`Current directory ${this.currentPath}\n`);
       const [comand, path1, path2] = commandParser(input);
