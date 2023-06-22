@@ -9,9 +9,10 @@ import { comandValidate, commandParser } from '../commands/helpers.js';
 import { currentUser } from '../index.js';
 
 class Core {
-  constructor() {
+  constructor(user) {
+    this.user = user;
     this.currentPath = path.dirname(os.homedir());
-    process.chdir(this.currentPath);
+    // process.chdir(this.currentPath);
   }
 
   async _resolvePath(userPath) {
@@ -199,10 +200,6 @@ class Core {
       readStream.pipe(decompressor).pipe(writeStream);
       console.log(`File ${pathToSrcFile} successfully decompressed in ${pathToDstFile}`);
     }
-  }
-
-  exit() {
-    process.exit();
   }
 
   async run() {

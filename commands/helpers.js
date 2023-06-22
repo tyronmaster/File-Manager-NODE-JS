@@ -22,7 +22,7 @@ function commandParser(userCommand) {
 async function comandValidate(comand, param1, param2) {
   switch (comand) {
     case '.exit': {
-      return true;
+      process.exit();
     }
     case 'up': {
       return (!param1 && !param2);
