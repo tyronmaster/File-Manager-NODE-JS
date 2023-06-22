@@ -208,7 +208,7 @@ class Core {
       output: process.stdout,
       terminal: true,
     });
-    
+
     do {
       const input = await rl.question(`Current directory ${this.currentPath}\n`);
       const [comand, path1, path2] = commandParser(input);
