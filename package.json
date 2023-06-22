@@ -1,0 +1,27 @@
+{
+  "name": "file-manager-node-js",
+  "version": "1.0.0",
+  "description": "File manager with pure NODE JS",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "start:user": "npm run start -- --username=Santa   --userpass=testonemore"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tyronmaster/File-Manager-NODE-JS.git"
+  },
+  "keywords": [
+    "NODE",
+    "file",
+    "manager",
+    "JavaScript"
+  ],
+  "author": "Degonski.Art",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tyronmaster/File-Manager-NODE-JS/issues"
+  },
+  "homepage": "https://github.com/tyronmaster/File-Manager-NODE-JS#readme"
+}
